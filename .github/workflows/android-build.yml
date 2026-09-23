@@ -26,8 +26,24 @@ jobs:
           if [ ! -d android ]; then
             flutter create --platforms=android --project-name personal_ai_image_to_video .
           fi
+      - name: Patch Android networking for local development
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('android/app/src/main/AndroidManifest.xml')
+          if p.exists():
+              s=p.read_text()
+              if 'android.permission.INTERNET' not in s:
+                  s=s.replace('</manifest>', '  <uses-permission android:name="android.permission.INTERNET" />\\n</manifest>')
+              if 'android:usesCleartextTraffic=' not in s:
+                  s=s.replace('<application', '<application android:usesCleartextTraffic="true"', 1)
+              p.write_text(s)
+          PY
       - name: Dependencies
         run: flutter pub get
+      - name: Backend smoke test
+        working-directory: server
+        run: npm install && npm test
       - name: Analyze
         run: flutter analyze
       - name: Test
