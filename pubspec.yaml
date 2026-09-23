@@ -1,0 +1,26 @@
+name: personal_ai_image_to_video
+description: Personal-use Android AI image-to-video studio.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  http: ^1.2.2
+  image_picker: ^1.1.2
+  path_provider: ^2.1.5
+  shared_preferences: ^2.5.3
+  video_player: ^2.9.2
+  share_plus: ^10.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
