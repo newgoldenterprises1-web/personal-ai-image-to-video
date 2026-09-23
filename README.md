@@ -13,58 +13,20 @@ Personal-use Android app for turning multiple HD images into AI-animated scene c
 - image → AI video → final MP4
 
 ## Architecture
-Android Flutter app → personal Node.js backend → Runway Dev image-to-video → local FFmpeg renderer → final MP4.
+Android Flutter app → personal Node.js backend → local ComfyUI/open image-to-video model → local FFmpeg renderer → final MP4.
 
 The backend is required because the Runway API secret must never be embedded in the Android application.
 
 ## Current real generation path
 1. Android imports the original selected image and stores a private app copy without intentional image-quality downscaling.
 2. Android uploads the image to the personal backend.
-3. Backend uses a Runway ephemeral upload.
-4. Backend creates a real Runway Gen-4.5 image-to-video task.
-5. Backend polls the task and downloads the generated MP4 into project storage.
+3. Backend sends the image and prompt to a **local ComfyUI instance running on the user's own PC**.
+4. ComfyUI runs an open image-to-video workflow and returns the generated video locally.
+5. The backend stores the generated MP4 in project storage.
 6. The Android app polls the job until completion and stores the generated clip URL.
-7. After the required scenes are ready, the backend validates the clip paths and uses FFmpeg to create the final export.
+7. After the required scenes are ready, the backend validates the clip paths and uses local FFmpeg to create the final export.
 8. The final export is normalized to the selected canvas, with 1080p as the default target and H.264/AAC MP4 output.
 
-Runway's current Gen-4.5 API supports image-to-video durations from 2–10 seconds. Long YouTube videos are built from multiple scene clips rather than one giant AI generation.
+**No Runway API, API key, subscription, payment gateway, or paid generation service is required.** The AI model runs locally. The trade-off is that generation requires a capable PC/GPU and local model files. The app itself has no subscription or per-generation charge.
 
-## Quality and aspect ratios
-Runway Gen-4.5 image-to-video currently supports:
-- landscape: 1280:720
-- portrait: 720:1280
-- square: 960:960
-
-The app preserves source images as imported and only performs the final video encoding/scaling required by the selected export canvas. A 1080p final export from a 1280×720 Gen-4.5 source is an upscale during final rendering, not a claim that Gen-4.5 itself produced native 1920×1080 pixels.
-
-## Android setup
-Install Flutter, then run:
-
-    flutter pub get
-    flutter run
-
-Use an Android phone with USB debugging enabled.
-
-Backend URL:
-- Android emulator: http://10.0.2.2:8787
-- Physical phone on the same Wi-Fi: http://PC_LAN_IP:8787
-- Physical phone over USB (recommended for local testing): run `adb reverse tcp:8787 tcp:8787`, then use `http://127.0.0.1:8787` in the app
-
-The Android manifest includes Internet permission and cleartext HTTP support for local development.
-
-## Backend setup
-    cd server
-    npm install
-    copy .env.example .env
-    npm start
-
-Install FFmpeg and verify with ffmpeg -version.
-
-Set RUNWAYML_API_SECRET in server/.env. Never put that secret in Flutter source code.
-
-## Validation
-GitHub Actions runs Flutter dependencies, backend smoke tests, flutter analyze, flutter test, and a release APK build.
-
-Generation jobs are persisted in the backend data directory. If the backend restarts while a Runway job is active, that interrupted job is restored as FAILED instead of remaining stuck forever.
-
-A real AI generation requires a valid Runway API secret and available Runway credits. The application deliberately reports a clear configuration error when the backend is not configured instead of faking an AI result.
+`ComfyUI` is an open local UI/server that can run open image-to-video models such as LTX-Video or Wan-family workflows. Model licenses and hardware requirements vary by model, so the selected workflow must be checked before commercial use.
