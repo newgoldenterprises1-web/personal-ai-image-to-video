@@ -180,7 +180,7 @@ class _HomePageState extends State<HomePage> {
     appBar:AppBar(title:Text(projectName),actions:[IconButton(onPressed:_settings,icon:const Icon(Icons.settings))]),
     body:busy?const _BusyView():Column(children:[
       _topBar(),
-      Expanded(child:scenes.isEmpty?_empty():ReorderableListView.builder(itemCount:scenes.length,onReorder:(a,b){setState((){if(b>a)b--;final x=scenes.removeAt(a);scenes.insert(b,x);});_save();},itemBuilder:(c,i)=>_sceneCard(scenes[i],i))),
+      Expanded(child:scenes.isEmpty?_empty():ReorderableListView.builder(itemCount:scenes.length,onReorderItem:(a,b){setState((){final x=scenes.removeAt(a);scenes.insert(b,x);});_save();},itemBuilder:(c,i)=>_sceneCard(scenes[i],i))),
       _bottom()
     ]),
   );
