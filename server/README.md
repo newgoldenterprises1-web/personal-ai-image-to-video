@@ -1,46 +1,25 @@
-# Personal AI Image → Video Server
+# Personal AI Image → Video backend
 
-## What it does
-- Receives HD source images from the Android app.
-- Uploads each source image to Runway Dev using an ephemeral upload.
-- Generates image-to-video clips with a real Runway API task.
-- Polls task status and downloads the resulting MP4 into local storage.
-- Concatenates generated clips with FFmpeg into a final YouTube-ready MP4.
-- Keeps the Runway secret on the server, never in the Android APK.
+This backend is intentionally **free of paid AI APIs**. It uses a local ComfyUI server and local open image-to-video workflows, then FFmpeg for final MP4 rendering.
 
-## Requirements
-- Node.js 20+
-- FFmpeg installed and available as `ffmpeg` on PATH.
-- A Runway Dev organization with credits and an API key.
+## Setup
 
-Runway's current API supports Gen-4.5 image-to-video and requires a developer account/API credits. See the official Runway documentation before production use.
+1. Install Node.js 20+ and FFmpeg.
+2. Install ComfyUI on the same PC and install an image-to-video workflow/model.
+3. Export the ComfyUI workflow in API format to `server/workflows/image-to-video.json`.
+4. In that workflow, use these placeholders where applicable:
+   - `{{IMAGE}}` for the uploaded input image filename
+   - `{{PROMPT}}` for the scene prompt
+   - `{{DURATION}}` for the requested duration
+   - `{{RATIO}}` for the project ratio
+5. Start ComfyUI on `http://127.0.0.1:8188`.
+6. Configure `server/.env` from `.env.example`.
+7. Run `npm install` then `npm start`.
 
-## Start
-```bash
-cd server
-npm install
-copy .env.example .env
-# edit .env and set RUNWAYML_API_SECRET
-npm start
-```
+The backend uploads the selected image to local ComfyUI, queues the workflow, waits for completion, downloads the first returned video/gif/image output, and stores it as an MP4 scene clip.
 
-Linux/macOS:
-```bash
-cp .env.example .env
-```
+## Important free-use note
 
-The API listens on port 8787 by default.
+There is no Runway API key, subscription, or per-generation API charge in this architecture. Compute is local, so there is no cloud inference bill. Your PC electricity and hardware are, tragically, still subject to the laws of physics.
 
-## Android device
-If the server runs on your PC and the phone is on the same Wi-Fi:
-1. Find the PC's LAN IPv4 address.
-2. Set the app Backend URL to `http://YOUR_PC_IP:8787`.
-3. Allow Node through the Windows Firewall when prompted.
-4. Test `/api/health` from the phone browser.
-
-For a deployed HTTPS server, use the HTTPS URL instead.
-
-## Security
-- Never commit `.env`.
-- Never put the Runway API key in Flutter.
-- This server is intended for personal use. Add authentication and HTTPS before exposing it to the public internet.
+Model licenses differ. Before using generated media commercially on YouTube, verify the license of the exact model and workflow you installed.
