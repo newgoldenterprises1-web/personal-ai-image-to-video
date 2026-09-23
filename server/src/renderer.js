@@ -23,12 +23,12 @@ export async function checkFfmpeg() {
   }
 }
 
-function safeOutputName(name) {
+export function safeOutputName(name) {
   const cleaned = String(name || "final.mp4").replace(/[^a-zA-Z0-9._-]/g, "_");
   return cleaned.toLowerCase().endsWith(".mp4") ? cleaned : `${cleaned}.mp4`;
 }
 
-function sceneToAbsolute(root, scene) {
+export function sceneToAbsolute(root, scene) {
   if (!scene || typeof scene !== "object") throw new Error("Invalid scene");
   const rootResolved = path.resolve(root);
 
