@@ -48,6 +48,7 @@ Use an Android phone with USB debugging enabled.
 Backend URL:
 - Android emulator: http://10.0.2.2:8787
 - Physical phone on the same Wi-Fi: http://PC_LAN_IP:8787
+- Physical phone over USB (recommended for local testing): run `adb reverse tcp:8787 tcp:8787`, then use `http://127.0.0.1:8787` in the app
 
 The Android manifest includes Internet permission and cleartext HTTP support for local development.
 
@@ -63,5 +64,7 @@ Set RUNWAYML_API_SECRET in server/.env. Never put that secret in Flutter source 
 
 ## Validation
 GitHub Actions runs Flutter dependencies, backend smoke tests, flutter analyze, flutter test, and a release APK build.
+
+Generation jobs are persisted in the backend data directory. If the backend restarts while a Runway job is active, that interrupted job is restored as FAILED instead of remaining stuck forever.
 
 A real AI generation requires a valid Runway API secret and available Runway credits. The application deliberately reports a clear configuration error when the backend is not configured instead of faking an AI result.
