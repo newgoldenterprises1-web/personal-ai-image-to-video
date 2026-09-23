@@ -115,8 +115,6 @@ class _HomePageState extends State<HomePage> {
     if(backend.trim().isEmpty){_snack('Set the backend URL first');return;}
     setState(()=>s.status='uploading'); await _save();
     try{
-      final r=await http.post(Uri.parse('${backend.trim()}/api/projects/$projectId/scenes'),body:{},headers:{});
-      // Image upload is done below using multipart because the endpoint expects the actual source.
       final req=http.MultipartRequest('POST',Uri.parse('${backend.trim()}/api/projects/$projectId/scenes'));
       req.files.add(await http.MultipartFile.fromPath('image',s.path));
       final up=await req.send();
