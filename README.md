@@ -29,12 +29,12 @@ Each scene:
 Runway currently documents Gen-4.5 image-to-video and 4/5/6/8 second generation durations. Longer 5–7 minute YouTube videos are therefore built from many short scene clips, not one giant AI generation.
 
 ## Android setup
-Install Flutter, then:
+The native Android project is committed in this repository. Install Flutter, then:
 ```bash
 flutter pub get
 flutter run
 ```
-Use an Android phone with USB debugging enabled.
+Use an Android phone with USB debugging enabled. The CI pipeline also runs Flutter analyze, tests, and a release APK build.
 
 ## Backend setup
 ```bash
