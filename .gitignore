@@ -1,0 +1,21 @@
+# Flutter
+.dart_tool/
+.packages
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+
+# Android
+android/.gradle/
+android/local.properties
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Server runtime
+server/node_modules/
+server/data/
