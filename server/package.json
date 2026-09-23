@@ -9,7 +9,7 @@
     "dev": "node --watch src/index.js"
   },
   "dependencies": {
-    "@runwayml/sdk": "^4.3.0",
+    "@runwayml/sdk": "^4.20.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
