@@ -26,7 +26,54 @@ const upload = multer({
 await fs.mkdir(path.join(root, "uploads"), { recursive: true });
 await fs.mkdir(path.join(root, "projects"), { recursive: true });
 
+const jobsFile = path.join(root, "jobs.json");
 const jobs = new Map();
+let persistTimer = null;
+
+async function persistJobsNow() {
+  const temp = jobsFile + ".tmp";
+  await fs.writeFile(temp, JSON.stringify([...jobs.values()], null, 2), "utf8");
+  await fs.rename(temp, jobsFile);
+}
+
+function persistJobs() {
+  if (persistTimer) return;
+  persistTimer = setTimeout(() => {
+    persistTimer = null;
+    persistJobsNow().catch(error => console.error("Could not persist jobs:", error));
+  }, 100);
+}
+
+function updateJob(jobId, patch) {
+  const current = jobs.get(jobId) || { id: jobId };
+  jobs.set(jobId, { ...current, ...patch });
+  persistJobs();
+  return jobs.get(jobId);
+}
+
+try {
+  const saved = JSON.parse(await fs.readFile(jobsFile, "utf8"));
+  if (Array.isArray(saved)) {
+    for (const job of saved) {
+      if (!job?.id) continue;
+      if (["SUCCEEDED", "FAILED", "CANCELED"].includes(job.status)) {
+        jobs.set(job.id, job);
+      } else {
+        jobs.set(job.id, {
+          ...job,
+          status: "FAILED",
+          progress: 100,
+          error: "Generation was interrupted because the backend restarted."
+        });
+      }
+    }
+  }
+  await persistJobsNow();
+} catch (error) {
+  if (error?.code !== "ENOENT") {
+    console.error("Could not load persisted jobs:", error);
+  }
+}
 const runway = process.env.RUNWAYML_API_SECRET ? new RunwayML({ apiKey: process.env.RUNWAYML_API_SECRET }) : null;
 const ffmpegAvailable = await checkFfmpeg();
 
@@ -52,7 +99,8 @@ app.get("/api/health", (_req, res) => {
     ok: true,
     aiConfigured: Boolean(runway),
     ffmpeg: ffmpegAvailable,
-    version: "1.1.0"
+    version: "1.2.0",
+    persistentJobs: true
   });
 });
 
@@ -98,7 +146,7 @@ app.post("/api/generate", async (req, res) => {
   }
 
   const jobId = uuid();
-  jobs.set(jobId, {
+  updateJob(jobId, {
     id: jobId,
     status: "UPLOADING",
     progress: 5,
@@ -114,7 +162,7 @@ app.post("/api/generate", async (req, res) => {
       const ext = path.extname(safeImagePath).toLowerCase();
       const mime = ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg";
 
-      jobs.set(jobId, { ...jobs.get(jobId), status: "UPLOADING", progress: 10 });
+      updateJob(jobId, { status: "UPLOADING", progress: 10 });
       const { uri } = await runway.uploads.createEphemeral(
         new File([image], path.basename(safeImagePath), { type: mime })
       );
@@ -125,7 +173,7 @@ app.post("/api/generate", async (req, res) => {
         "1:1": "960:960"
       };
 
-      jobs.set(jobId, { ...jobs.get(jobId), status: "GENERATING", progress: 20 });
+      updateJob(jobId, { status: "GENERATING", progress: 20 });
       const task = await runway.imageToVideo.create({
         model,
         promptImage: uri,
@@ -134,8 +182,7 @@ app.post("/api/generate", async (req, res) => {
         duration: numericDuration
       });
 
-      jobs.set(jobId, {
-        ...jobs.get(jobId),
+      updateJob(jobId, {
         runwayTaskId: task.id,
         status: "GENERATING",
         progress: 30
@@ -151,8 +198,7 @@ app.post("/api/generate", async (req, res) => {
           throw new Error(result.failure || result.failureCode || "AI generation failed");
         }
 
-        jobs.set(jobId, {
-          ...jobs.get(jobId),
+        updateJob(jobId, {
           status: result.status,
           progress: Math.min(85, (jobs.get(jobId)?.progress || 30) + 5)
         });
@@ -172,15 +218,13 @@ app.post("/api/generate", async (req, res) => {
       const out = path.join(outDir, `${jobId}.mp4`);
       await fs.writeFile(out, buffer);
 
-      jobs.set(jobId, {
-        ...jobs.get(jobId),
+      updateJob(jobId, {
         status: "SUCCEEDED",
         progress: 100,
         videoPath: out
       });
     } catch (error) {
-      jobs.set(jobId, {
-        ...jobs.get(jobId),
+      updateJob(jobId, {
         status: "FAILED",
         progress: 100,
         error: error?.message || String(error)
@@ -209,6 +253,12 @@ app.post("/api/render", async (req, res) => {
 
   if (!safeProjectId(projectId) || !Array.isArray(scenes) || scenes.length === 0) {
     return res.status(400).json({ error: "projectId and scenes are required" });
+  }
+  if (!["16:9", "9:16", "1:1"].includes(ratio)) {
+    return res.status(400).json({ error: "ratio must be 16:9, 9:16 or 1:1" });
+  }
+  if (!["720p", "1080p"].includes(resolution)) {
+    return res.status(400).json({ error: "resolution must be 720p or 1080p" });
   }
   if (!ffmpegAvailable) {
     return res.status(503).json({ error: "FFmpeg is not installed or not available on PATH" });
