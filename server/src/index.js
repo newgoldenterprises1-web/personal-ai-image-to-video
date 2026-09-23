@@ -59,6 +59,8 @@ app.post("/api/generate", async (req, res) => {
   if (!requireRunway(res)) return;
   const { projectId, imagePath, prompt, ratio = "16:9", duration = 5, model = "gen4.5" } = req.body || {};
   if (!projectId || !imagePath || !prompt) return res.status(400).json({ error: "projectId, imagePath and prompt are required" });
+  const safeImagePath = path.resolve(imagePath);
+  if (!safeImagePath.startsWith(path.resolve(root) + path.sep)) return res.status(400).json({ error: "imagePath must belong to this server project storage" });
   if (![4,5,6,8].includes(Number(duration)) && model === "gen4.5") {
     return res.status(400).json({ error: "gen4.5 generation duration must be 4, 5, 6 or 8 seconds" });
   }
@@ -69,7 +71,7 @@ app.post("/api/generate", async (req, res) => {
 
   (async () => {
     try {
-      const image = await fs.readFile(imagePath);
+      const image = await fs.readFile(safeImagePath);
       const ext = path.extname(imagePath).toLowerCase();
       const mime = ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg";
       jobs.set(jobId, { ...jobs.get(jobId), status: "UPLOADING", progress: 10 });
