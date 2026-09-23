@@ -416,9 +416,8 @@ class _HomePageState extends State<HomePage> {
                     ? _empty()
                     : ReorderableListView.builder(
                         itemCount: scenes.length,
-                        onReorder: (oldIndex, newIndex) {
+                        onReorderItem: (oldIndex, newIndex) {
                           setState(() {
-                            if (oldIndex < newIndex) newIndex -= 1;
                             final scene = scenes.removeAt(oldIndex);
                             scenes.insert(newIndex, scene);
                           });
