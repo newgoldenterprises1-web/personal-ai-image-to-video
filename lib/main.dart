@@ -585,9 +585,21 @@ class _HomePageState extends State<HomePage> {
               keyboardType: TextInputType.url,
             ),
             const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text('Resolution: $resolution'),
+            Row(
+              children: [
+                const Text('Resolution'),
+                const SizedBox(width: 12),
+                DropdownButton<String>(
+                  value: resolution,
+                  items: const [
+                    DropdownMenuItem(value: '720p', child: Text('720p')),
+                    DropdownMenuItem(value: '1080p', child: Text('1080p')),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) setState(() => resolution = value);
+                  },
+                ),
+              ],
             ),
           ],
         ),
