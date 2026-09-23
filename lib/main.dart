@@ -193,7 +193,7 @@ class _HomePageState extends State<HomePage> {
   Widget _sceneCard(Scene s,int i)=>Card(key:ValueKey(s.id),margin:const EdgeInsets.symmetric(horizontal:12,vertical:5),child:ListTile(
     leading:SizedBox(width:74,height:58,child:Image.file(File(s.path),fit:BoxFit.cover,errorBuilder:(_,__,___)=>const Icon(Icons.broken_image))),
     title:Text('Scene ${i+1} • ${s.duration}s'),subtitle:Text(s.status== 'generating'?'Generating AI video…':s.status== 'failed'?'Generation failed':s.videoUrl!=null?'AI clip ready':'Ready'),
-    trailing:Wrap(spacing:2,children:[IconButton(onPressed:()=>_editScene(s),icon:const Icon(Icons.tune)),IconButton(onPressed:()=>_generate(s),icon:Icon(s.videoUrl!=null?Icons.refresh:Icons.auto_awesome)),IconButton(onPressed:(){setState(()=>scenes.remove(s));_save();},icon:const Icon(Icons.delete_outline))])
+    trailing:Wrap(spacing:2,children:[if(s.videoUrl!=null)IconButton(onPressed:()=>_preview(s.videoUrl!),icon:const Icon(Icons.play_circle_outline)),IconButton(onPressed:()=>_editScene(s),icon:const Icon(Icons.tune)),IconButton(onPressed:()=>_generate(s),icon:Icon(s.videoUrl!=null?Icons.refresh:Icons.auto_awesome)),IconButton(onPressed:(){setState(()=>scenes.remove(s));_save();},icon:const Icon(Icons.delete_outline))])
   ));
 
   Widget _empty()=>Center(child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[const Icon(Icons.movie_creation_outlined,size:72),const SizedBox(height:12),const Text('Add your HD images to start'),const SizedBox(height:8),FilledButton.icon(onPressed:_addImages,icon:const Icon(Icons.add),label:const Text('Import images'))]));
@@ -208,7 +208,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class _BusyView extends StatelessWidget{const _BusyView();@override Widget build(BuildContext c)=>const Center(child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[CircularProgressIndicator(),SizedBox(height:16),Text('Working… AI and FFmpeg are doing their little rituals.')]);}
+class _BusyView extends StatelessWidget{const _BusyView();@override Widget build(BuildContext c)=>const Center(child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[CircularProgressIndicator(),SizedBox(height:16),Text('Working… AI and FFmpeg are doing their little rituals.') ]));}
 
 class VideoPreview extends StatefulWidget{final String url;const VideoPreview({super.key,required this.url});@override State<VideoPreview> createState()=>_VideoPreviewState();}
 class _VideoPreviewState extends State<VideoPreview>{late VideoPlayerController c;@override void initState(){super.initState();c=VideoPlayerController.networkUrl(Uri.parse(widget.url))..initialize().then((_){setState((){});});}@override void dispose(){c.dispose();super.dispose();}@override Widget build(BuildContext context)=>c.value.isInitialized?AspectRatio(aspectRatio:c.value.aspectRatio,child:Stack(alignment:Alignment.center,children:[VideoPlayer(c),IconButton(onPressed:(){setState(()=>c.value.isPlaying?c.pause():c.play());},icon:Icon(c.value.isPlaying?Icons.pause_circle:Icons.play_circle,size:64))])):const CircularProgressIndicator();}
