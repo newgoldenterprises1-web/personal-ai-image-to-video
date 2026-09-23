@@ -156,9 +156,6 @@ class _HomePageState extends State<HomePage> {
     if(ready.isEmpty){_snack('Generate at least one scene first');return;}
     setState(()=>busy=true);
     try{
-      final payload=ready.map((s)=>{'videoPath':null,'videoUrl':s.videoUrl}).toList();
-      // Convert URLs back to server paths is not safe/reliable, so use the server's stored clip discovery.
-      // The render endpoint also accepts a project and will render every generated clip when scenes is omitted.
       final r=await http.post(Uri.parse('${backend.trim()}/api/render'),headers:{'Content-Type':'application/json'},body:jsonEncode({'projectId':projectId,'scenes':ready.map((s)=>{'videoPath':s.videoUrl!.replaceFirst(RegExp('^.*?/media/'), '')}).toList(),'outputName':'${projectName.replaceAll(RegExp(r'[^A-Za-z0-9_-]'),'_')}.mp4','ratio':ratio,'resolution':resolution}));
       if(r.statusCode>=300)throw Exception(r.body);
       finalUrl=jsonDecode(r.body)['videoUrl'];await _save();setState((){});
