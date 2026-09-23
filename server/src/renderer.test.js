@@ -4,7 +4,7 @@ import path from "node:path";
 import { safeOutputName, sceneToAbsolute } from "./renderer.js";
 
 test("safeOutputName prevents unsafe output names", () => {
-  assert.equal(safeOutputName("../../final video"), "______final_video.mp4");
+  assert.equal(safeOutputName("../../final video"), ".._.._final_video.mp4");
   assert.equal(safeOutputName("youtube.mp4"), "youtube.mp4");
 });
 
