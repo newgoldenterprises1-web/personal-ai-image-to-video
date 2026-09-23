@@ -25,7 +25,8 @@ export async function renderProject({ root, projectId, scenes, outputName, ratio
     const idx = file.indexOf(marker);
     if (idx < 0) throw new Error("Invalid scene video URL");
     const relative = file.slice(idx + marker.length).replaceAll("/", path.sep);
-    const absolute = path.join(root, relative);
+    const absolute = path.resolve(root, relative);
+    if (!absolute.startsWith(path.resolve(root) + path.sep)) throw new Error("Invalid scene path");
     await fs.access(absolute);
     lines.push(`file '${absolute.replaceAll("'", "'\\''")}'`);
   }
