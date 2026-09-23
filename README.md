@@ -3,7 +3,6 @@
 Personal-use Android app for turning multiple HD images into AI-animated scene clips and combining them into a final MP4 for YouTube.
 
 ## Scope lock
-This project is intentionally narrow:
 - no login
 - no payments
 - no subscriptions
@@ -16,38 +15,53 @@ This project is intentionally narrow:
 ## Architecture
 Android Flutter app → personal Node.js backend → Runway Dev image-to-video → local FFmpeg renderer → final MP4.
 
-The backend is required because the Runway API secret must not be embedded in the Android application.
+The backend is required because the Runway API secret must never be embedded in the Android application.
 
-## Current generation path
-Each scene:
-1. Android preserves the selected source image in app storage without intentional downscaling.
-2. App uploads the image to the personal backend.
-3. Backend uses Runway ephemeral upload and creates an image-to-video task.
-4. Backend polls the task and downloads the ephemeral result to local storage.
-5. After all scenes are ready, FFmpeg concatenates them and produces a 1080p MP4 target.
+## Current real generation path
+1. Android imports the original selected image and stores a private app copy without intentional image-quality downscaling.
+2. Android uploads the image to the personal backend.
+3. Backend uses a Runway ephemeral upload.
+4. Backend creates a real Runway Gen-4.5 image-to-video task.
+5. Backend polls the task and downloads the generated MP4 into project storage.
+6. The Android app polls the job until completion and stores the generated clip URL.
+7. After the required scenes are ready, the backend validates the clip paths and uses FFmpeg to create the final export.
+8. The final export is normalized to the selected canvas, with 1080p as the default target and H.264/AAC MP4 output.
 
-Runway currently documents Gen-4.5 image-to-video and 4/5/6/8 second generation durations. Longer 5–7 minute YouTube videos are therefore built from many short scene clips, not one giant AI generation.
+Runway's current Gen-4.5 API supports image-to-video durations from 2–10 seconds. Long YouTube videos are built from multiple scene clips rather than one giant AI generation.
+
+## Quality and aspect ratios
+Runway Gen-4.5 image-to-video currently supports:
+- landscape: 1280:720
+- portrait: 720:1280
+- square: 960:960
+
+The app preserves source images as imported and only performs the final video encoding/scaling required by the selected export canvas. A 1080p final export from a 1280×720 Gen-4.5 source is an upscale during final rendering, not a claim that Gen-4.5 itself produced native 1920×1080 pixels.
 
 ## Android setup
-The native Android project is committed in this repository. Install Flutter, then:
-```bash
-flutter pub get
-flutter run
-```
-Use an Android phone with USB debugging enabled. The CI pipeline also runs Flutter analyze, tests, and a release APK build.
+Install Flutter, then run:
+
+    flutter pub get
+    flutter run
+
+Use an Android phone with USB debugging enabled.
+
+Backend URL:
+- Android emulator: http://10.0.2.2:8787
+- Physical phone on the same Wi-Fi: http://PC_LAN_IP:8787
+
+The Android manifest includes Internet permission and cleartext HTTP support for local development.
 
 ## Backend setup
-```bash
-cd server
-npm install
-copy .env.example .env
-npm start
-```
-Install FFmpeg and ensure `ffmpeg -version` works.
+    cd server
+    npm install
+    copy .env.example .env
+    npm start
 
-Set the app Backend URL:
-- Android emulator: `http://10.0.2.2:8787`
-- Physical phone on same Wi-Fi: `http://PC_LAN_IP:8787`
+Install FFmpeg and verify with ffmpeg -version.
 
-## Important
-A real generation cannot be tested without a valid Runway API key and credits. The code intentionally fails clearly when the server is not configured instead of pretending a fake render is an AI result.
+Set RUNWAYML_API_SECRET in server/.env. Never put that secret in Flutter source code.
+
+## Validation
+GitHub Actions runs Flutter dependencies, backend smoke tests, flutter analyze, flutter test, and a release APK build.
+
+A real AI generation requires a valid Runway API secret and available Runway credits. The application deliberately reports a clear configuration error when the backend is not configured instead of faking an AI result.
