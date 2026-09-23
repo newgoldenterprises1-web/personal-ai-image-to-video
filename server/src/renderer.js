@@ -16,12 +16,16 @@ export async function renderProject({ root, projectId, scenes, outputName, ratio
   const dir = path.join(root, "projects", projectId, "render");
   await fs.mkdir(dir, { recursive: true });
   const listFile = path.join(dir, "concat.txt");
-  const valid = scenes.filter(s => s && s.videoPath).map(s => s.videoPath);
+  const valid = scenes.filter(s => s && s.videoUrl).map(s => s.videoUrl);
   if (!valid.length) throw new Error("No generated scene clips are ready to render");
 
   const lines = [];
   for (const file of valid) {
-    const absolute = path.resolve(file);
+    const marker = "/media/";
+    const idx = file.indexOf(marker);
+    if (idx < 0) throw new Error("Invalid scene video URL");
+    const relative = file.slice(idx + marker.length).replaceAll("/", path.sep);
+    const absolute = path.join(root, relative);
     await fs.access(absolute);
     lines.push(`file '${absolute.replaceAll("'", "'\\''")}'`);
   }
