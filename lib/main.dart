@@ -177,6 +177,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _snack(String s)=>ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(s),behavior:SnackBarBehavior.floating));
+  Future<void> _preview(String url) async { await showDialog(context:context,builder:(_)=>Dialog(child:Padding(padding:const EdgeInsets.all(12),child:VideoPreview(url:url)))); }
 
   @override Widget build(BuildContext context)=>Scaffold(
     appBar:AppBar(title:Text(projectName),actions:[IconButton(onPressed:_settings,icon:const Icon(Icons.settings))]),
