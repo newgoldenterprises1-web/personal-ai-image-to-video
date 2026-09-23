@@ -6,7 +6,8 @@
   "engines": { "node": ">=20" },
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
+    "dev": "node --watch src/index.js",
+    "test": "node --test src/*.test.js"
   },
   "dependencies": {
     "@runwayml/sdk": "^4.20.1",
