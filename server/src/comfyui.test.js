@@ -68,7 +68,7 @@ test("ComfyUI generation uploads, queues, polls, and downloads a video", async (
 });
 
 test("generated workflow contains the expected LTX graph nodes", async () => {
-  const raw = await fs.readFile(path.resolve(process.env.COMFYUI_WORKFLOW_JSON), "utf8");
+  const raw = await fs.readFile(path.resolve("workflows/image-to-video.json"), "utf8");
   const workflow = JSON.parse(raw);
   for (const nodeType of ["CLIPLoader","CheckpointLoaderSimple","LTXVImgToVideo","LTXVConditioning","LTXVScheduler","SamplerCustom","VAEDecode","CreateVideo","SaveVideo"]) {
     assert.ok(Object.values(workflow).some(node => node.class_type === nodeType), nodeType + " missing");
