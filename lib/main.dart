@@ -360,7 +360,7 @@ class _HomePageState extends State<HomePage> {
           'ratio': ratio,
           'resolution': resolution,
         }),
-      ).timeout(_requestTimeout);
+      ).timeout(_renderTimeout);
       if (response.statusCode >= 300) throw Exception(response.body);
 
       finalUrl =
