@@ -51,3 +51,15 @@ Verify the license of the exact model files and workflow you install before comm
 ## Hardware note
 
 No API credits or subscription are required for local inference. Local inference still requires enough GPU/VRAM, RAM, disk space, and time for the selected model. Physics remains stubbornly non-free.
+
+## Windows preflight
+
+From the repository root, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\check-local-ai.ps1
+```
+
+Do this before testing the Android app. It checks the local ComfyUI server, LTXV node registration, model files, FFmpeg, and the API-format workflow.
+
+The repository intentionally does not contain large model weights. The included workflow references the LTX-Video 0.9.5 2B checkpoint and `t5xxl_fp16.safetensors`. Download those separately into the ComfyUI model directories and review their exact license terms before commercial use.
