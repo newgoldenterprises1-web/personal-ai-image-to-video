@@ -75,5 +75,7 @@ test("generated workflow contains the expected LTX graph nodes", async () => {
   }
 });
 test("bundled workflow passes local readiness validation", async () => {
-  assert.equal(await comfy.checkComfyWorkflow(), true);
+  process.env.COMFYUI_WORKFLOW_JSON = path.resolve("workflows/image-to-video.json");
+  const realWorkflow = await import("./comfyui.js?workflowcheck=1");
+  assert.equal(await realWorkflow.checkComfyWorkflow(), true);
 });
