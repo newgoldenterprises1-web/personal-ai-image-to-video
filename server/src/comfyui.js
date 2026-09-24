@@ -65,10 +65,44 @@ export async function checkComfyUi() {
   }
 }
 
+export async function loadComfyWorkflow() {
+  const raw = await fs.readFile(workflowPath, "utf8");
+  const workflow = JSON.parse(raw);
+  if (!workflow || Array.isArray(workflow) || typeof workflow !== "object") {
+    throw new Error("ComfyUI workflow must be an API-format node map");
+  }
+  return workflow;
+}
+
 export async function checkComfyWorkflow() {
   try {
-    await fs.access(workflowPath);
-    return true;
+    const workflow = await loadComfyWorkflow();
+    const nodes = Object.values(workflow);
+    const requiredTypes = [
+      "CLIPLoader",
+      "CheckpointLoaderSimple",
+      "CLIPTextEncode",
+      "LTXVImgToVideo",
+      "LTXVConditioning",
+      "LTXVScheduler",
+      "SamplerCustom",
+      "VAEDecode",
+      "CreateVideo",
+      "SaveVideo"
+    ];
+    if (!requiredTypes.every(type => nodes.some(node => node?.class_type === type))) {
+      return false;
+    }
+    const serialized = JSON.stringify(workflow);
+    return [
+      "{{IMAGE}}",
+      "{{PROMPT}}",
+      "{{WIDTH}}",
+      "{{HEIGHT}}",
+      "{{FRAMES}}",
+      "{{FPS}}",
+      "{{SEED}}"
+    ].every(token => serialized.includes(token));
   } catch {
     return false;
   }
