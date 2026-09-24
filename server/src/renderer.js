@@ -55,48 +55,59 @@ export function sceneToAbsolute(root, scene, projectId) {
 export async function renderProject({ root, projectId, scenes, outputName, ratio, resolution }) {
   const rootResolved = path.resolve(root);
   const dir = path.join(rootResolved, "projects", projectId, "render");
-  await fs.mkdir(dir, { recursive: true });
+  const normalizedDir = path.join(dir, "normalized");
+  await fs.mkdir(normalizedDir, { recursive: true });
 
-  const listFile = path.join(dir, "concat.txt");
   const valid = scenes.filter(Boolean);
   if (!valid.length) throw new Error("No generated scene clips are ready");
-
-  const lines = [];
-  for (const scene of valid) {
-    const absolute = sceneToAbsolute(rootResolved, scene, projectId);
-    await fs.access(absolute);
-    lines.push(`file '${absolute.replaceAll("'", "'\\''")}'`);
-  }
-  await fs.writeFile(listFile, lines.join("\n") + "\n", "utf8");
 
   const size = ratio === "9:16"
     ? "1080:1920"
     : ratio === "1:1"
       ? "1080:1080"
       : "1920:1080";
-
-  const target = path.join(dir, safeOutputName(outputName));
   const crf = resolution === "720p" ? "21" : "18";
-
-  // Normalize every generated clip to one stable output canvas before concat.
-  // The AI source is kept intact; only the final export is encoded.
   const vf = [
     `scale=${size}:force_original_aspect_ratio=decrease`,
     `pad=${size}:(ow-iw)/2:(oh-ih)/2:color=black`,
     "format=yuv420p"
   ].join(",");
+  const normalizedFiles = [];
 
+  for (let index = 0; index < valid.length; index += 1) {
+    const scene = valid[index];
+    const absolute = sceneToAbsolute(rootResolved, scene, projectId);
+    await fs.access(absolute);
+
+    const normalized = path.join(normalizedDir, `scene-${String(index + 1).padStart(4, "0")}.mp4`);
+    await run("ffmpeg", [
+      "-y",
+      "-i", absolute,
+      "-vf", vf,
+      "-r", "24",
+      "-fps_mode", "cfr",
+      "-an",
+      "-c:v", "libx264",
+      "-preset", "medium",
+      "-crf", crf,
+      "-pix_fmt", "yuv420p",
+      "-movflags", "+faststart",
+      normalized
+    ]);
+    normalizedFiles.push(normalized);
+  }
+
+  const listFile = path.join(dir, "concat.txt");
+  const lines = normalizedFiles.map(file => `file '${file.replaceAll("'", "'\\''")}'`);
+  await fs.writeFile(listFile, lines.join("\n") + "\n", "utf8");
+
+  const target = path.join(dir, safeOutputName(outputName));
   await run("ffmpeg", [
     "-y",
     "-f", "concat",
     "-safe", "0",
     "-i", listFile,
-    "-vf", vf,
-    "-c:v", "libx264",
-    "-preset", "medium",
-    "-crf", crf,
-    "-c:a", "aac",
-    "-b:a", "192k",
+    "-c", "copy",
     "-movflags", "+faststart",
     target
   ]);
