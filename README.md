@@ -34,3 +34,15 @@ To generate video, place an API-format ComfyUI workflow JSON at `server/workflow
 ## USB test path
 
 With USB debugging enabled on the Android phone and the backend running on the PC, use `adb reverse tcp:8787 tcp:8787` and keep the app backend URL at `http://127.0.0.1:8787`.
+
+## Windows local AI readiness
+
+The repository does not store multi-gigabyte model weights. Install ComfyUI and the model files locally, then run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\check-local-ai.ps1
+```
+
+The checker validates Node.js, FFmpeg, the workflow, the LTX checkpoint/text encoder, the ComfyUI server, and the LTXV node registration before you attempt an Android generation.
+
+The included API workflow targets the LTX-Video 0.9.5 2B workflow path. The model release is separately licensed, so check the exact model license before commercial publishing.
