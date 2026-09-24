@@ -63,3 +63,15 @@ powershell -ExecutionPolicy Bypass -File .\scripts\check-local-ai.ps1
 Do this before testing the Android app. It checks the local ComfyUI server, LTXV node registration, model files, FFmpeg, and the API-format workflow.
 
 The repository intentionally does not contain large model weights. The included workflow references the LTX-Video 0.9.5 2B checkpoint and `t5xxl_fp16.safetensors`. Download those separately into the ComfyUI model directories and review their exact license terms before commercial use.
+
+## Convenience scripts
+
+From the repository root on Windows:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\check-local-ai.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\start-backend.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\connect-android-usb.ps1
+```
+
+Use the readiness checker first, then start the backend, then create the USB reverse tunnel. The Android app should use `http://127.0.0.1:8787`.
