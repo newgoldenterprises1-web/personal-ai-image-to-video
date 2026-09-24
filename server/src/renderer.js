@@ -28,13 +28,16 @@ export function safeOutputName(name) {
   return cleaned.toLowerCase().endsWith(".mp4") ? cleaned : `${cleaned}.mp4`;
 }
 
-export function sceneToAbsolute(root, scene) {
+export function sceneToAbsolute(root, scene, projectId) {
   if (!scene || typeof scene !== "object") throw new Error("Invalid scene");
   const rootResolved = path.resolve(root);
+  const projectRoot = projectId
+    ? path.join(rootResolved, "projects", String(projectId))
+    : rootResolved;
 
   if (scene.videoPath) {
     const absolute = path.resolve(rootResolved, String(scene.videoPath));
-    if (absolute.startsWith(rootResolved + path.sep)) return absolute;
+    if (absolute.startsWith(projectRoot + path.sep)) return absolute;
   }
 
   if (scene.videoUrl) {
@@ -43,7 +46,7 @@ export function sceneToAbsolute(root, scene) {
     if (index < 0) throw new Error("Invalid scene video URL");
     const relative = String(scene.videoUrl).slice(index + marker.length).replaceAll("/", path.sep);
     const absolute = path.resolve(rootResolved, relative);
-    if (absolute.startsWith(rootResolved + path.sep)) return absolute;
+    if (absolute.startsWith(projectRoot + path.sep)) return absolute;
   }
 
   throw new Error("Scene must contain videoPath or videoUrl");
@@ -60,7 +63,7 @@ export async function renderProject({ root, projectId, scenes, outputName, ratio
 
   const lines = [];
   for (const scene of valid) {
-    const absolute = sceneToAbsolute(rootResolved, scene);
+    const absolute = sceneToAbsolute(rootResolved, scene, projectId);
     await fs.access(absolute);
     lines.push(`file '${absolute.replaceAll("'", "'\\''")}'`);
   }
