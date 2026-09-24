@@ -74,6 +74,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  static const Duration _uploadTimeout = Duration(minutes: 2);
+  static const Duration _requestTimeout = Duration(seconds: 45);
+  static const Duration _renderTimeout = Duration(minutes: 30);
+  static const Duration _downloadTimeout = Duration(minutes: 2);
+
   final picker = ImagePicker();
   final scenes = <Scene>[];
 
@@ -84,6 +89,14 @@ class _HomePageState extends State<HomePage> {
   String backend = 'http://127.0.0.1:8787';
   bool busy = false;
   String? finalUrl;
+
+  Uri _backendUri(String path) {
+    final base = backend.trim().replaceFirst(RegExp(r'/+$'), '');
+    if (base.isEmpty) {
+      throw const FormatException('Backend URL is empty');
+    }
+    return Uri.parse('$base$path');
+  }
 
   @override
   void initState() {
@@ -229,18 +242,18 @@ class _HomePageState extends State<HomePage> {
     try {
       final request = http.MultipartRequest(
         'POST',
-        Uri.parse('${backend.trim()}/api/projects/$projectId/scenes'),
+        _backendUri('/api/projects/$projectId/scenes'),
       );
       request.files.add(await http.MultipartFile.fromPath('image', scene.path));
 
-      final upload = await request.send();
+      final upload = await request.send().timeout(_uploadTimeout);
       final uploadBody = await upload.stream.bytesToString();
       if (upload.statusCode >= 300) throw Exception(uploadBody);
 
       final imagePath = (jsonDecode(uploadBody) as Map<String, dynamic>)['path'];
 
       final generation = await http.post(
-        Uri.parse('${backend.trim()}/api/generate'),
+        _backendUri('/api/generate'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'projectId': projectId,
@@ -249,7 +262,7 @@ class _HomePageState extends State<HomePage> {
           'ratio': ratio,
           'duration': scene.duration,
         }),
-      );
+      ).timeout(_requestTimeout);
       if (generation.statusCode >= 300) throw Exception(generation.body);
 
       scene.jobId =
@@ -276,8 +289,8 @@ class _HomePageState extends State<HomePage> {
       if (!mounted || scene.jobId == null) return false;
 
       final response = await http.get(
-        Uri.parse('${backend.trim()}/api/jobs/${scene.jobId}'),
-      );
+        _backendUri('/api/jobs/${scene.jobId}'),
+      ).timeout(_requestTimeout);
       if (response.statusCode >= 300) throw Exception(response.body);
 
       final job = jsonDecode(response.body) as Map<String, dynamic>;
@@ -335,7 +348,7 @@ class _HomePageState extends State<HomePage> {
     setState(() => busy = true);
     try {
       final response = await http.post(
-        Uri.parse('${backend.trim()}/api/render'),
+        _backendUri('/api/render'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'projectId': projectId,
@@ -347,7 +360,7 @@ class _HomePageState extends State<HomePage> {
           'ratio': ratio,
           'resolution': resolution,
         }),
-      );
+      ).timeout(_requestTimeout);
       if (response.statusCode >= 300) throw Exception(response.body);
 
       finalUrl =
@@ -370,7 +383,7 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    final response = await http.get(Uri.parse(finalUrl!));
+    final response = await http.get(Uri.parse(finalUrl!)).timeout(_downloadTimeout);
     if (response.statusCode >= 300) {
       _snack('Could not download final video');
       return;
