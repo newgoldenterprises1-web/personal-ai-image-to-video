@@ -75,3 +75,9 @@ powershell -ExecutionPolicy Bypass -File .\scripts\connect-android-usb.ps1
 ```
 
 Use the readiness checker first, then start the backend, then create the USB reverse tunnel. The Android app should use `http://127.0.0.1:8787`.
+
+## Hardware expectations
+
+The bundled LTX-Video 0.9.5 2B path is a local GPU workload. Current ComfyUI model guidance lists about 12 GB VRAM minimum and 16 GB recommended for the 2B model, with 32 GB system RAM recommended for LTX workflows. Actual usage varies with resolution, frame count, batching, and optimization settings.
+
+The model files are large and are intentionally not committed to GitHub. The LTX checkpoint is about 6.34 GB and the referenced T5 FP16 encoder is about 9.79 GB, so allow substantial disk space for local model storage. citeturn192230search6turn578338search2turn578338search0
