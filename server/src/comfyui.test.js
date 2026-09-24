@@ -74,3 +74,6 @@ test("generated workflow contains the expected LTX graph nodes", async () => {
     assert.ok(Object.values(workflow).some(node => node.class_type === nodeType), nodeType + " missing");
   }
 });
+test("bundled workflow passes local readiness validation", async () => {
+  assert.equal(await comfy.checkComfyWorkflow(), true);
+});
