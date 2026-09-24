@@ -65,6 +65,15 @@ export async function checkComfyUi() {
   }
 }
 
+export async function checkComfyWorkflow() {
+  try {
+    await fs.access(workflowPath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function mimeForImage(filePath) {
   switch (path.extname(filePath).toLowerCase()) {
     case ".png": return "image/png";
