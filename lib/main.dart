@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -125,6 +126,31 @@ class _HomePageState extends State<HomePage> {
       }
       finalUrl = prefs.getString('finalUrl');
     });
+    for (final scene in scenes) {
+      if (scene.status == 'uploading' && scene.jobId == null) {
+        scene.status = 'failed';
+      } else if ((scene.status == 'generating' || scene.status == 'uploading') &&
+          scene.jobId != null) {
+        unawaited(_resumeScene(scene));
+      }
+    }
+  }
+
+  Future<void> _resumeScene(Scene scene) async {
+    if (scene.jobId == null) return;
+    try {
+      await _poll(scene);
+    } catch (error) {
+      scene.status = 'failed';
+      await _save();
+      if (mounted) {
+        setState(() {});
+        final index = scenes.indexOf(scene);
+        _snack(
+          'Scene ${index >= 0 ? index + 1 : ''} recovery failed: $error',
+        );
+      }
+    }
   }
 
   Future<void> _save() async {
@@ -231,6 +257,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<bool> _generate(Scene scene) async {
+    if (scene.status == 'uploading' || scene.status == 'generating') {
+      return false;
+    }
     if (backend.trim().isEmpty) {
       _snack('Set the backend URL first');
       return false;
