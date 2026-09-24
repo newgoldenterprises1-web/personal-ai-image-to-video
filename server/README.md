@@ -1,17 +1,15 @@
 # Personal AI Image → Video backend
 
-This backend is intentionally free of paid AI APIs. It uses local ComfyUI with the built-in LTX-Video workflow path, then local FFmpeg for final MP4 rendering.
+This backend is intentionally free of paid AI APIs. It uses local ComfyUI with a user-provided API-format workflow, then local FFmpeg for final MP4 rendering.
 
 ## Free local setup
 
 1. Install Node.js 20+ and FFmpeg.
-2. Install a recent ComfyUI build with the LTXV nodes available.
-3. Download `ltx-video-2b-v0.9.5.safetensors` into `ComfyUI/models/checkpoints/`.
-4. Download `t5xxl_fp16.safetensors` into `ComfyUI/models/text_encoders/`.
-5. Keep the included API-format workflow at `server/workflows/image-to-video.json`.
-6. Start ComfyUI on `http://127.0.0.1:8188`.
-7. Copy `server/.env.example` to `server/.env` when needed.
-8. Run:
+2. Install ComfyUI on the same PC.
+3. Add an API-format image-to-video workflow JSON to `server/workflows/image-to-video.json`, or point `COMFYUI_WORKFLOW_JSON` at your own workflow file.
+4. Start ComfyUI on `http://127.0.0.1:8188`.
+5. Copy `server/.env.example` to `server/.env` when needed.
+6. Run:
 
 ```bash
 npm install
@@ -46,9 +44,9 @@ The Android app does not use a paid cloud endpoint.
 
 ## Model and quality notes
 
-The bundled workflow targets the LTX-Video 0.9.5 2B checkpoint. Its practical workflow range is kept below 257 frames and uses 24 FPS, while final export can still be 1080p through FFmpeg. Generated AI frames can therefore be an upscale relative to the final YouTube canvas.
+The exact model or workflow you use depends on the ComfyUI graph you install. Generated AI frames can be an upscale relative to the final YouTube canvas, while final export can still be 1080p through FFmpeg.
 
-Verify the exact license of the checkpoint and any additional model files before commercial YouTube publishing. The LTX-Video 0.9.5 release notes describe a commercial-use license change, but license terms can differ across model releases.
+Verify the license of the exact model files and workflow you install before commercial YouTube publishing.
 
 ## Hardware note
 
