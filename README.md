@@ -27,6 +27,9 @@ The backend keeps local ComfyUI and FFmpeg off the Android app and provides a si
 7. After the required scenes are ready, the backend validates the clip paths and uses local FFmpeg to create the final export.
 8. The final export is normalized to the selected canvas, with 1080p as the default target and H.264/AAC MP4 output.
 
-**No Runway API, API key, subscription, payment gateway, or paid generation service is required.** The AI model runs locally. The trade-off is that generation requires a capable PC/GPU and local model files. The app itself has no subscription or per-generation charge. Local inference does not call a paid cloud AI API.
+**No paid cloud AI API, API key, subscription, payment gateway, or per-generation charge is required.** The AI model runs locally through ComfyUI. The trade-off is that generation requires a capable PC/GPU and local model files.
 
-`ComfyUI` is an open local UI/server that can run open image-to-video models such as LTX-Video or Wan-family workflows. Model licenses and hardware requirements vary by model, so the selected workflow must be checked before commercial use.
+`ComfyUI` runs the bundled LTX-Video 0.9.5 local image-to-video workflow. Model licenses and hardware requirements vary by release, so the exact installed model must be checked before commercial use.
+## USB test path
+
+With USB debugging enabled on the Android phone and the backend running on the PC, use `adb reverse tcp:8787 tcp:8787` and keep the app backend URL at `http://127.0.0.1:8787`.
