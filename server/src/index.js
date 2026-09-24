@@ -17,7 +17,7 @@ await fs.mkdir(root, { recursive: true });
 const app = express();
 app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
 app.use(express.json({ limit: "2mb" }));
-app.use("/media", express.static(root));
+app.use("/media/projects", express.static(path.join(root, "projects")));
 
 const upload = multer({
   dest: path.join(root, "uploads"),
@@ -77,8 +77,13 @@ try {
 }
 
 function publicFile(req, file) {
-  const relative = path.relative(rootResolved, path.resolve(file)).replaceAll(path.sep, "/");
-  return req.protocol + "://" + req.get("host") + "/media/" + relative;
+  const projectsRoot = path.join(rootResolved, "projects");
+  const absolute = path.resolve(file);
+  const relative = path.relative(projectsRoot, absolute);
+  if (relative.startsWith(".." + path.sep) || path.isAbsolute(relative)) {
+    throw new Error("Public media file must belong to project storage");
+  }
+  return req.protocol + "://" + req.get("host") + "/media/projects/" + relative.replaceAll(path.sep, "/");
 }
 
 function safeProjectId(value) {
