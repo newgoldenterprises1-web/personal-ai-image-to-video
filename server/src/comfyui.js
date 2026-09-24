@@ -122,7 +122,7 @@ function mimeForImage(filePath) {
 
 function extractVideoFile(historyItem) {
   const outputs = Object.values(historyItem?.outputs || {});
-  const videoExtensions = new Set([".mp4", ".mov", ".mkv", ".webm"]);
+  const videoExtensions = new Set([".mp4"]);
   for (const nodeOutput of outputs) {
     for (const key of ["videos", "gifs", "images"]) {
       for (const file of nodeOutput?.[key] || []) {
@@ -207,8 +207,8 @@ export async function generateWithComfyUI({ imagePath, prompt, duration, ratio, 
       });
       if (!response.ok) throw new Error("Could not download ComfyUI output: HTTP " + response.status);
       const contentType = response.headers.get("content-type") || "";
-      if (!contentType.startsWith("video/") && !/\.(mp4|mov|mkv|webm)$/i.test(file.filename)) {
-        throw new Error("ComfyUI returned a non-video output (" + file.filename + ")");
+      if (!/\.mp4$/i.test(file.filename) || (!contentType.startsWith("video/") && contentType !== "application/octet-stream")) {
+        throw new Error("ComfyUI must return an MP4 video from SaveVideo; received " + file.filename + " (" + (contentType || "unknown content-type") + ")");
       }
       onProgress?.(95);
       return Buffer.from(await response.arrayBuffer());
