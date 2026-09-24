@@ -24,7 +24,7 @@ npm start
 - ComfyUI runs the image-to-video graph locally.
 - The backend polls ComfyUI history until a real MP4/WebM/MOV/MKV video output exists.
 - The generated scene clip is stored under the project `clips/` directory.
-- Final multi-scene rendering uses local FFmpeg and produces 720p or 1080p MP4.
+- Final multi-scene rendering first normalizes every scene to the selected canvas and 24 FPS, then concatenates the normalized MP4 clips into the final 720p or 1080p MP4.
 
 ## USB Android connection
 
