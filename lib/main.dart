@@ -81,7 +81,7 @@ class _HomePageState extends State<HomePage> {
   String projectName = 'My YouTube Video';
   String ratio = '16:9';
   String resolution = '1080p';
-  String backend = 'http://10.0.2.2:8787';
+  String backend = 'http://127.0.0.1:8787';
   bool busy = false;
   String? finalUrl;
 
@@ -247,7 +247,6 @@ class _HomePageState extends State<HomePage> {
           'prompt': _prompt(scene),
           'ratio': ratio,
           'duration': scene.duration,
-          'model': 'gen4.5',
         }),
       );
       if (generation.statusCode >= 300) throw Exception(generation.body);
