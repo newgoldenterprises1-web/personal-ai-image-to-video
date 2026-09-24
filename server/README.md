@@ -60,7 +60,7 @@ From the repository root, run:
 powershell -ExecutionPolicy Bypass -File .\scripts\check-local-ai.ps1
 ```
 
-Do this before testing the Android app. It checks the local ComfyUI server, LTXV node registration, model files, FFmpeg, and the API-format workflow.
+Before testing the Android app, install the local model files with `scripts/download-ltx095-models.ps1` when you want the bundled LTX-Video 0.9.5 path, then run `scripts/check-local-ai.ps1`. The checker validates the local ComfyUI server, LTXV node registration, model files, FFmpeg, and the API-format workflow.
 
 The repository intentionally does not contain large model weights. The included workflow references the LTX-Video 0.9.5 2B checkpoint and `t5xxl_fp16.safetensors`. Download those separately into the ComfyUI model directories and review their exact license terms before commercial use.
 
@@ -81,3 +81,5 @@ Use the readiness checker first, then start the backend, then create the USB rev
 The bundled LTX-Video 0.9.5 2B path is a local GPU workload. Current ComfyUI model guidance lists about 12 GB VRAM minimum and 16 GB recommended for the 2B model, with 32 GB system RAM recommended for LTX workflows. Actual usage varies with resolution, frame count, batching, and optimization settings.
 
 The model files are large and are intentionally not committed to GitHub. The LTX checkpoint is about 6.34 GB and the referenced T5 FP16 encoder is about 9.79 GB, so allow substantial disk space for local model storage.
+
+For the bundled model path, the official ComfyUI LTX-Video 0.9.5 setup calls for the 2B checkpoint in `models/checkpoints` and the T5 text encoder in `models/text_encoders`. The optional downloader fetches those files from their published sources and also stores the model license file locally. https://blog.comfy.org/p/ltx-video-095-day-1-support-in-comfyui
