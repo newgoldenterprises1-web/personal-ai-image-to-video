@@ -15,7 +15,7 @@ Personal-use Android app for turning multiple HD images into AI-animated scene c
 ## Architecture
 Android Flutter app → personal Node.js backend → local ComfyUI/open image-to-video model → local FFmpeg renderer → final MP4.
 
-The backend is required because the Runway API secret must never be embedded in the Android application.
+The backend keeps local ComfyUI and FFmpeg off the Android app and provides a single local generation/render endpoint.
 
 ## Current real generation path
 1. Android imports the original selected image and stores a private app copy without intentional image-quality downscaling.
@@ -27,6 +27,6 @@ The backend is required because the Runway API secret must never be embedded in 
 7. After the required scenes are ready, the backend validates the clip paths and uses local FFmpeg to create the final export.
 8. The final export is normalized to the selected canvas, with 1080p as the default target and H.264/AAC MP4 output.
 
-**No Runway API, API key, subscription, payment gateway, or paid generation service is required.** The AI model runs locally. The trade-off is that generation requires a capable PC/GPU and local model files. The app itself has no subscription or per-generation charge.
+**No Runway API, API key, subscription, payment gateway, or paid generation service is required.** The AI model runs locally. The trade-off is that generation requires a capable PC/GPU and local model files. The app itself has no subscription or per-generation charge. Local inference does not call a paid cloud AI API.
 
 `ComfyUI` is an open local UI/server that can run open image-to-video models such as LTX-Video or Wan-family workflows. Model licenses and hardware requirements vary by model, so the selected workflow must be checked before commercial use.
