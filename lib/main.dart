@@ -323,8 +323,12 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _render() async {
     final ready = scenes.where((scene) => scene.videoUrl != null).toList();
+    if (ready.length != scenes.length) {
+      _snack('Generate every scene before rendering the final video');
+      return;
+    }
     if (ready.isEmpty) {
-      _snack('Generate at least one scene first');
+      _snack('Add and generate at least one scene first');
       return;
     }
 
