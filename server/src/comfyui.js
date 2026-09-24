@@ -1,9 +1,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { randomInt } from "node:crypto";
 
 const baseUrl = (process.env.COMFYUI_URL || "http://127.0.0.1:8188").replace(/\/$/, "");
-const workflowPath = path.resolve(process.env.COMFYUI_WORKFLOW_JSON || path.join(path.dirname(new URL(import.meta.url).pathname), "..", "workflows", "image-to-video.json"));
+const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+const workflowPath = path.resolve(process.env.COMFYUI_WORKFLOW_JSON || path.join(moduleDir, "..", "workflows", "image-to-video.json"));
 const timeoutMs = Number(process.env.COMFYUI_TIMEOUT_MS || 20 * 60 * 1000);
 
 const RATIO_SPECS = {
