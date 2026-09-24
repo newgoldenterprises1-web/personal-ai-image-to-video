@@ -6,7 +6,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { v4 as uuid } from "uuid";
-import { generateWithComfyUI, checkComfyUi } from "./comfyui.js";
+import { generateWithComfyUI, checkComfyUi, checkComfyWorkflow } from "./comfyui.js";
 import { renderProject, checkFfmpeg } from "./renderer.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -92,9 +92,10 @@ function safeProjectId(value) {
 
 async function requireComfyUI(res) {
   const available = await checkComfyUi();
-  if (!available) {
+  const workflowReady = await checkComfyWorkflow();
+  if (!available || !workflowReady) {
     res.status(503).json({
-      error: "Free local AI backend is not running. Start ComfyUI on this PC and configure COMFYUI_URL/COMFYUI_WORKFLOW_JSON."
+      error: "Free local AI backend is not fully configured. Start ComfyUI on this PC and place an API-format workflow JSON at the configured COMFYUI_WORKFLOW_JSON path."
     });
     return false;
   }
@@ -102,9 +103,13 @@ async function requireComfyUI(res) {
 }
 
 app.get("/api/health", async (_req, res) => {
+  const aiReady = await checkComfyUi();
+  const workflowReady = await checkComfyWorkflow();
   res.json({
     ok: true,
-    aiConfigured: await checkComfyUi(),
+    aiConfigured: aiReady && workflowReady,
+    comfyUiRunning: aiReady,
+    workflowConfigured: workflowReady,
     ffmpeg: await checkFfmpeg(),
     version: "2.1.0",
     persistentJobs: true,
