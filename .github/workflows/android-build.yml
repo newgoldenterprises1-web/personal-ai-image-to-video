@@ -43,7 +43,7 @@ jobs:
         run: flutter pub get
       - name: Backend smoke test
         working-directory: server
-        run: npm install && npm test
+        run: npm install && npm test && node --check src/index.js && node --check src/comfyui.js
       - name: Analyze
         run: flutter analyze
       - name: Test
