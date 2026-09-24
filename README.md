@@ -29,7 +29,8 @@ The backend keeps local ComfyUI and FFmpeg off the Android app and provides a si
 
 **No paid cloud AI API, API key, subscription, payment gateway, or per-generation charge is required.** The AI model runs locally through ComfyUI. The trade-off is that generation requires a capable PC/GPU and local model files.
 
-`ComfyUI` runs the bundled LTX-Video 0.9.5 local image-to-video workflow. Model licenses and hardware requirements vary by release, so the exact installed model must be checked before commercial use.
+To generate video, place an API-format ComfyUI workflow JSON at `server/workflows/image-to-video.json` or point `COMFYUI_WORKFLOW_JSON` to your own workflow file.
+
 ## USB test path
 
 With USB debugging enabled on the Android phone and the backend running on the PC, use `adb reverse tcp:8787 tcp:8787` and keep the app backend URL at `http://127.0.0.1:8787`.
